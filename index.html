@@ -99,8 +99,10 @@
         client.onMessageArrived = onMessageArrived;
 
         // Conecta ao broker
+        // Conecta ao broker
         client.connect({
-            onSuccess: onConnect
+        onSuccess: onConnect,
+        useSSL: true // Adicione esta linha para usar o protocolo seguro (WSS)
         });
 
         // Callback de sucesso na conexão
@@ -134,4 +136,5 @@
     </script>
 </body>
 </html>
+
 
