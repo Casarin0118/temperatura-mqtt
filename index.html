@@ -79,66 +79,36 @@
         </div>
     </div>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
-    
     <script>
-        // Configurações do Broker MQTT
-        const host = "broker.hivemq.com";
-        const port = 1883; // Porta para WebSockets Secure (WSS)
+        // O endereço IP do seu ESP32
+        const esp32IP = "10.87.148.18"; 
 
-        // Tópicos que a página irá assinar
-        const temperaturaTopic = "iot/temperatura";
-        const umidadeTopic = "iot/umidade";
+        // Função para buscar os dados do ESP32 usando GET
+        async function fetchData() {
+            try {
+                // Faz a requisição GET para a API do ESP32
+                const response = await fetch(`http://${esp32IP}/dados`);
+                if (!response.ok) {
+                    throw new Error(`Erro de rede: ${response.status}`);
+                }
+                const data = await response.json();
 
-        // Cria o cliente MQTT
-        const clientId = "webclient-" + parseInt(Math.random() * 100);
-        const client = new Paho.MQTT.Client(host, port, clientId);
+                // Atualiza a página com os dados recebidos
+                document.getElementById('temperatura').textContent = data.temperatura.toFixed(1);
+                document.getElementById('umidade').textContent = data.umidade.toFixed(1);
 
-        // Funções de callback para eventos do cliente
-        client.onConnectionLost = onConnectionLost;
-        client.onMessageArrived = onMessageArrived;
-
-        // Conecta ao broker
-        // Conecta ao broker
-        client.connect({
-        onSuccess: onConnect,
-        useSSL: true // Adicione esta linha para usar o protocolo seguro (WSS)
-        });
-
-        // Callback de sucesso na conexão
-        function onConnect() {
-            console.log("Conectado ao broker MQTT!");
-            // Assina os tópicos após a conexão
-            client.subscribe(temperaturaTopic);
-            client.subscribe(umidadeTopic);
-        }
-
-        // Callback para quando a conexão for perdida
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                console.log("Conexão perdida:", responseObject.errorMessage);
+            } catch (error) {
+                console.error("Falha ao buscar dados:", error);
+                document.getElementById('temperatura').textContent = '--';
+                document.getElementById('umidade').textContent = '--';
             }
         }
 
-        // Callback para quando uma nova mensagem chega
-        function onMessageArrived(message) {
-            console.log("Mensagem recebida do tópico " + message.destinationName);
-            
-            const payload = message.payloadString;
-            
-            // Atualiza os valores na página com base no tópico
-            if (message.destinationName === temperaturaTopic) {
-                document.getElementById('temperatura').textContent = parseFloat(payload).toFixed(1);
-            } else if (message.destinationName === umidadeTopic) {
-                document.getElementById('umidade').textContent = parseFloat(payload).toFixed(1);
-            }
-        }
+        // Atualiza a página a cada 30 segundos
+        setInterval(fetchData, 30000);
+
+        // Chama a função uma vez para carregar os dados imediatamente ao abrir a página
+        fetchData();
     </script>
 </body>
 </html>
-
-
-
-
-
-
