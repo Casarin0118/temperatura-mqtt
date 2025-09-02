@@ -79,32 +79,58 @@
         </div>
     </div>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    
     <script>
-        const esp32IP = "10.87.148.18"; 
+        // Configurações do Broker MQTT
+        const host = "broker.hivemq.com";
+        const port = 8000; // Porta para Websockets
 
-        async function fetchData() {
-            try {
-                const response = await fetch(`http://${esp32IP}/dados`);
-                if (!response.ok) {
-                    throw new Error(`Erro de rede: ${response.status}`);
-                }
-                const data = await response.json();
+        // Tópicos que a página irá assinar
+        const temperaturaTopic = "iot/temperatura";
+        const umidadeTopic = "iot/umidade";
 
-                document.getElementById('temperatura').textContent = data.temperatura.toFixed(1);
-                document.getElementById('umidade').textContent = data.umidade.toFixed(1);
+        // Cria o cliente MQTT
+        const clientId = "webclient-" + parseInt(Math.random() * 100);
+        const client = new Paho.MQTT.Client(host, port, clientId);
 
-            } catch (error) {
-                console.error("Falha ao buscar dados:", error);
-                document.getElementById('temperatura').textContent = '--';
-                document.getElementById('umidade').textContent = '--';
+        // Funções de callback para eventos do cliente
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
+
+        // Conecta ao broker
+        client.connect({
+            onSuccess: onConnect
+        });
+
+        // Callback de sucesso na conexão
+        function onConnect() {
+            console.log("Conectado ao broker MQTT!");
+            // Assina os tópicos após a conexão
+            client.subscribe(temperaturaTopic);
+            client.subscribe(umidadeTopic);
+        }
+
+        // Callback para quando a conexão for perdida
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("Conexão perdida:", responseObject.errorMessage);
             }
         }
 
-        setInterval(fetchData, 30000);
-
-        fetchData();
+        // Callback para quando uma nova mensagem chega
+        function onMessageArrived(message) {
+            console.log("Mensagem recebida do tópico " + message.destinationName);
+            
+            const payload = message.payloadString;
+            
+            // Atualiza os valores na página com base no tópico
+            if (message.destinationName === temperaturaTopic) {
+                document.getElementById('temperatura').textContent = parseFloat(payload).toFixed(1);
+            } else if (message.destinationName === umidadeTopic) {
+                document.getElementById('umidade').textContent = parseFloat(payload).toFixed(1);
+            }
+        }
     </script>
-
 </body>
-
 </html>
