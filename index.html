@@ -92,6 +92,7 @@
                     throw new Error(`Erro de rede: ${response.status}`);
                 }
                 const data = await response.json();
+                console.log('Dados recebidos:', data);
 
                 // Atualiza a página com os dados recebidos
                 document.getElementById('temperatura').textContent = data.temperatura.toFixed(1);
@@ -105,10 +106,11 @@
         }
 
         // Atualiza a página a cada 30 segundos
-        setInterval(fetchData, 30000);
+        setInterval(fetchData, 15000);
 
         // Chama a função uma vez para carregar os dados imediatamente ao abrir a página
         fetchData();
     </script>
 </body>
 </html>
+
