@@ -87,7 +87,7 @@
         async function fetchData() {
             try {
                 // Faz a requisição GET para a API do ESP32
-                const response = await fetch(`http://${esp32IP}/dados`);
+                const response = await fetch(`https://${esp32IP}/dados`);
                 if (!response.ok) {
                     throw new Error(`Erro de rede: ${response.status}`);
                 }
@@ -113,4 +113,5 @@
     </script>
 </body>
 </html>
+
 
