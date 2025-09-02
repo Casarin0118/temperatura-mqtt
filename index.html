@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Temperatura e Umidade</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 30px;
+        }
+
+        .card-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: #e9ecef;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+        }
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        p {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        #temperatura {
+            color: #dc3545;
+        }
+
+        #umidade {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Monitor de Ambiente</h1>
+        <div class="card-container">
+            <div class="card">
+                <h2>Temperatura</h2>
+                <p><span id="temperatura">--</span> °C</p>
+            </div>
+            <div class="card">
+                <h2>Umidade</h2>
+                <p><span id="umidade">--</span> %</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const esp32IP = "SEU_IP_DO_ESP32"; 
+
+        async function fetchData() {
+            try {
+                const response = await fetch(`http://${esp32IP}/dados`);
+                if (!response.ok) {
+                    throw new Error(`Erro de rede: ${response.status}`);
+                }
+                const data = await response.json();
+
+                document.getElementById('temperatura').textContent = data.temperatura.toFixed(1);
+                document.getElementById('umidade').textContent = data.umidade.toFixed(1);
+
+            } catch (error) {
+                console.error("Falha ao buscar dados:", error);
+                document.getElementById('temperatura').textContent = '--';
+                document.getElementById('umidade').textContent = '--';
+            }
+        }
+
+        setInterval(fetchData, 30000);
+
+        fetchData();
+    </script>
+
+</body>
+</html>
